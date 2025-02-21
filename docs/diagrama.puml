@@ -1,0 +1,41 @@
+@startuml
+' Definición de clases
+
+class Instalacion {
+  +ObjectId _id
+  +String nombre
+  +String direccion
+  +String ciudad
+}
+
+class Horario {
+  +Date dia
+  +String hora_inicio
+  +String hora_fin
+  +Instalacion instalacion
+}
+
+class Usuario {
+  +ObjectId _id
+  +String nombre
+  +String email
+}
+
+class Reserva {
+  +ObjectId _id
+  +Date fecha_reserva
+  +Horario horario
+  +Usuario usuario  ' referencia al usuario
+}
+
+' Relaciones:
+' - Los horarios embeben la instalación (composición, ya que se guarda un snapshot)
+Horario *-- Instalacion : embebe
+
+' - Las reservas embeben el horario (se guarda la información del momento de la reserva)
+Reserva *-- Horario : embebe
+
+' - La reserva referencia al usuario (no se embebe, se guarda su _id)
+Reserva --> Usuario : referencia
+
+@enduml
