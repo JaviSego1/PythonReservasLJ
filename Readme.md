@@ -58,3 +58,33 @@ Me aseguro que el virtual environment está activo y ejecuto la APP en el puerto
 flask --app hola run --port 8080
 ```
 
+## Instalación de MongoDB
+
+De la [imagen oficial de Mongo](https://hub.docker.com/_/mongo/), adaptamos el Docker Compose:
+
+```yaml
+services:
+
+  mongo:
+    image: mongo
+    restart: "no"
+    ports: 
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 78agsbjha7834aSDFjhd73
+
+  mongo-express:
+    image: mongo-express
+    restart: "no"
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root      
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 78agsbjha7834aSDFjhd73
+      ME_CONFIG_MONGODB_URL: mongodb://root:78agsbjha7834aSDFjhd73@mongo:27017/
+      ME_CONFIG_BASICAUTH: "false"
+```
+
+Para comprobar que ha funcionado, abrimos Mongo Express en local: [http://localhost:8081/](http://localhost:8081/).
+
