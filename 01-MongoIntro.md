@@ -41,7 +41,131 @@ Filas o tuplas | Documentos
 
 Sin colecciones no puedo tener bases de datos en Mongo. Siempre, como mínimo estará la colección "delete_me".
 
-## Interactuando con MongoShell
+
+## Conexión interactiva a MongoDB
+
+Aunque por lo general no usaremos MongoDB en modo interactivo, vamos a ver algunos ejemplos de cómo interactuar con la shell de mongo (mongosh):
+
+![Ejemplo de conexión en modo interactivo.](docs/mongodbinteractivo.png)
+
+1. **Iniciar el shell interactivo:**
+   Abre tu terminal y ejecuta los siguientes comandos:
+   1. `docker exec -ti stack-mongo_mongo_1 /bin/bash`: para abrir una terminal interactiva en el contenedor de nuestro servicio **mongo**.
+   2. `mongosh -u root -p`: para ingresar al shell interactivo de MongoDB, la contraseña es *83uddjfp0cmMD*, como fijamos en el docker-compose.
+   3. `use('GestionAcademica')`: desde la shell de mongo, indicamos qué base de datos queremos usar de esta manera.
+
+2. **Crear un documento (Create):**
+   Para insertar un nuevo documento en una colección llamada `alumnos`, puedes utilizar el siguiente comando:
+
+   ```javascript
+   db.alumnos.insertOne({ nombre: "Juan Perez", edad: 20, carrera: "Ingeniería Informática" })
+   ```
+
+3. **Leer documentos (Read):**
+   Para recuperar todos los documentos de la colección `alumnos`, puedes usar el comando `find()`:
+
+   ```javascript
+   db.alumnos.find()
+   ```
+
+   Esto mostrará todos los documentos que representan a los alumnos.
+
+4. **Actualizar un documento (Update):**
+   Para actualizar un documento, puedes utilizar el comando `updateOne()`. Supongamos que Juan Pérez cambió su carrera a "Ingeniería Eléctrica":
+
+   ```javascript
+   db.alumnos.updateOne({ nombre: "Juan Perez" }, { $set: { carrera: "Ingeniería Eléctrica" } })
+   ```
+
+   Esto actualiza el documento de Juan Pérez con la nueva información sobre su carrera.
+
+5. **Eliminar un documento (Delete):**
+   Para eliminar un documento, puedes utilizar el comando `deleteOne()`. Supongamos que Juan Pérez ya no es alumno:
+
+   ```javascript
+   db.alumnos.deleteOne({ nombre: "Juan Perez" })
+   ```
+   
+   Esto eliminará el documento que representa a Juan Pérez de la colección.
+
+Recuerda, para buscar un objeto en una colección usamos el método find. Así el formato para consultar la colección `profesor` sería:
+
+```javascript
+db.profesor.find( { "nombre":"Juan"}).pretty();
+```
+
+Pero ¿y si quiero buscar profesore con asignaturas con más de 5 horas (inclusive)?
+
+```javascript
+db.profesor.find({ 
+    asignaturas: 
+        {
+            $elemMatch: {
+                    horas: { $gt: 4}
+            }
+        }
+});
+```
+
+Tienes más ejemplos sobre la sintaxis de consulta en la Web de MongoDB: <https://www.mongodb.com/docs/manual/tutorial/query-documents/>.
+
+## Colección de ejemplo
+
+Vamos a utilizar una colección ficticia llamada `estudiantes` que contiene información sobre estudiantes en una universidad. Aquí tienes algunos documentos de ejemplo en esta colección:
+
+```javascript
+db.estudiantes.insertMany([
+  { nombre: "Ana García", edad: 22, carrera: "Biología", semestre: 5, promedio: 8.5 },
+  { nombre: "Carlos López", edad: 21, carrera: "Ingeniería Civil", semestre: 4, promedio: 7.2 },
+  { nombre: "María Torres", edad: 20, carrera: "Psicología", semestre: 3, promedio: 9.0 },
+  { nombre: "Juan Rodríguez", edad: 23, carrera: "Historia", semestre: 6, promedio: 7.8 },
+  { nombre: "Elena Pérez", edad: 19, carrera: "Matemáticas", semestre: 2, promedio: 9.5 }
+])
+```
+
+Ahora, puedes realizar diversas consultas utilizando el método `find()` de MongoDB. Aquí tienes algunos ejemplos:
+
+1. **Recuperar todos los estudiantes:**
+   ```javascript
+   db.estudiantes.find({})
+   ```
+
+2. **Filtrar estudiantes por carrera:**
+   ```javascript
+   db.estudiantes.find({ carrera: "Biología" })
+   ```
+
+3. **Estudiantes mayores de 21 años:**
+   ```javascript
+   db.estudiantes.find({ edad: { $gt: 21 } })
+   ```
+
+4. **Estudiantes con promedio mayor o igual a 8.0:**
+   ```javascript
+   db.estudiantes.find({ promedio: { $gte: 8.0 } })
+   ```
+
+5. **Estudiantes de Psicología en el tercer semestre:**
+   ```javascript
+   db.estudiantes.find({ carrera: "Psicología", semestre: 3 })
+   ```
+
+6. **Ordenar estudiantes por promedio en orden descendente:**
+   ```javascript
+   db.estudiantes.find().sort({ promedio: -1 })
+   ```
+
+7. **Limitar la cantidad de resultados a 3:**
+   ```javascript
+   db.estudiantes.find().limit(3)
+   ```
+
+Estos son solo ejemplos básicos de consultas utilizando el método `find()` en MongoDB. La sintaxis puede variar según las necesidades específicas de tu aplicación, y MongoDB ofrece una amplia variedad de operadores y opciones para realizar consultas más avanzadas. Puedes consultar la documentación oficial de MongoDB para obtener más detalles sobre la sintaxis y los operadores de consulta: [MongoDB Query Documents](https://docs.mongodb.com/manual/tutorial/query-documents/).
+
+\pagebreak
+
+
+# Segundo ejemplo completo con MongoDB
 
 Para abrir una terminal interactiva con el contenedor, lo podemos hacer desde el plugin correspondiente del IDE, desde las propias utilidades de Docker Desktop o bien desde terminal así:
 
