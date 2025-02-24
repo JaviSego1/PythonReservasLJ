@@ -35,7 +35,7 @@ pip install Flask
 ```
 
 **Cada vez que añadimos una dependencia hay que ejecutar esto:**
-\pagebreak
+
 ```bash
 pip freeze > requirements.txt
 ```
@@ -60,17 +60,4 @@ flask --app hola run --port 8080
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 \pagebreak
-
