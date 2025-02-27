@@ -32,7 +32,7 @@ use deporte;
 show tables;
 describe usuario;
 select JSON_OBJECT(
-    'enabled' ,enabled ,
+    'enabled' ,(CASE WHEN enabled=1 THEN true ELSE false END) ,
     'id', id,
     'username', username,
     'email', email,
@@ -41,13 +41,14 @@ select JSON_OBJECT(
 ) from usuario;
 ```
 
-Lo que nos daría como salida:
+Hemos tenido que hacer el CASE para evitar que nos ponga un objeto binario al convertir el bit. Lo que nos daría como salida:
 
 ```js
-{"id": 2, "tipo": "OPERARIO", "email": "pepe@gmail.com", "enabled": "base64:type16:AQ==", "password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"}
-{"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": "base64:type16:AQ==", "password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"}
-{"id": 7, "tipo": "USUARIO", "email": "darkside@starwars.com", "enabled": "base64:type16:AQ==", "password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"} 
-{"id": 13, "tipo": "ADMIN", "email": "gerencia@vdc.com", "enabled": "base64:type16:AQ==", "password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
+{"id": 2, "tipo": "OPERARIO", "email": "pepe@gmail.com", "enabled": 1, "password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"}
+{"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"}
+{"id": 7, "tipo": "USUARIO", "email": "darkside@starwars.com", "enabled": 1, "password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"}
+{"id": 13, "tipo": "ADMIN", "email": "gerencia@vdc.com", "enabled": 1, "password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
+
 
 ```
 
