@@ -9,7 +9,7 @@ select JSON_OBJECT(
     
 select JSON_OBJECT(
     'id', id, 
-    'nombre', i.nombre)
+    'nombre', nombre)
     from instalacion;  
 
 select JSON_OBJECT(

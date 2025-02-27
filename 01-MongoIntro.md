@@ -375,3 +375,303 @@ db.reservas.deleteOne({ _id: ObjectId("60f1b2c3d4e5f67890123458") });
   En la colección `horarios` se embebe la información de la instalación. Esto es útil si el horario necesita conservar un snapshot de la instalación en el momento de creación, sin preocuparse por cambios futuros en la instalación.
 
 \pagebreak
+
+
+# Preparando la base de datos de nuestra aplicación
+
+Hemos heredado una base de datos MySQL de un anterior proyecto que tenemos que adaptar al presente con MongoDB. Este ejercicio es muy interesante pues vamos a revisar desde cómo hacer la exportación de datos hasta cómo insertarlos y prepararlos para la nueva aplicación en MongoDB.
+
+Nuestra base de datos en MySQL tiene el siguiente esquema:
+
+![Esquema de la Base de Datos de Instalaciones Deportivas](./docs/esquemaBBDDDeporte.png)
+
+Lo ideal sería no hacerlo de manera manual, sino desde un script de Pyhton que automatice esta tarea. De momento lo haremos manualmente para familiarizarnos con comandos útiles de la Mongo Shell para ir aprendiendo el lenguaje de consulta de Mongo.
+
+## Exportar a JSON desde MySQL
+
+MySQL permite exportar datos a JSON directamente gracias a la instrucción `SELECT JSON_OBJECT`: 
+
+```sql
+-- sintaxis básica: SELECT JSON_OBJECT([key1, value1, key2, value2, ...])
+-- ejemplo de clave-valor sin usar tablas
+SELECT 
+  JSON_OBJECT(
+    'name', 'John', 'age', 30
+  ) result;
+```
+
+Esto dará como resultado lo siguiente:
+
+```data
++-----------------------------+
+| result                      |
++-----------------------------+
+| {"age": 30, "name": "John"} |
++-----------------------------+
+1 row in set (0.00 sec)
+```
+
+## Datos de la tabla instalaciones
+
+Sea la tabla que almacena las instalaciones con esta estructura:
+
+```sql
+CREATE TABLE instalacion (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  nombre varchar(80) NOT NULL UNIQUE
+);
+```
+
+Si conectamos a la base de datos MySQL y abrimos un terminal interactivo o bien desde `Adminer` ejecutamos esta sentencia SQL para extraer la información en formato JSON:
+
+```sql
+select JSON_OBJECT(
+    'id', id, 
+    'nombre', nombre)
+    from instalacion;  
+```
+
+Esto da como resultado esto:
+
+```data
+{"id": 7, "nombre": "tenis arriba"}
+{"id": 8, "nombre": "tenis césped artificial"}
+{"id": 9, "nombre": "fútbol"}
+{"id": 10, "nombre": "baloncesto"}
+{"id": 11, "nombre": "squash"}
+{"id": 13, "nombre": "sauna mujeres"}
+{"id": 14, "nombre": "pista de pádel"}
+{"id": 16, "nombre": "sauna caballeros"}
+```
+
+Para poder insertarlo en Mongo, tendremos que añadir una coma al final de cada línea y meterlo dentro de un array para hacer un `insertMany`:
+
+```js
+db.instalaciones.insertMany([
+{"id": 7, "nombre": "tenis arriba"},
+{"id": 8, "nombre": "tenis césped artificial"},
+{"id": 9, "nombre": "fútbol"},
+{"id": 10, "nombre": "baloncesto"},
+{"id": 11, "nombre": "squash"},
+{"id": 13, "nombre": "sauna mujeres"},
+{"id": 14, "nombre": "pista de pádel"},
+{"id": 16, "nombre": "sauna caballeros"}
+]);
+```
+
+## Datos de la tabla horarios
+
+Sea la tabla que almacena los horarios con esta estructura:
+
+```sql
+CREATE TABLE horario (
+  hora_fin time(6) DEFAULT NULL,
+  hora_inicio time(6) DEFAULT NULL,
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  instalacion_id bigint DEFAULT NULL,
+  FOREIGN KEY (instalacion_id) REFERENCES instalacion (id)
+);
+```
+
+La consulta para extraer la información de esta tabla en JSON sería: 
+
+```js
+select JSON_OBJECT(
+    'hora_fin', h.hora_fin,
+    'hora_inicio',h.hora_inicio, 
+    'id',h.id,
+    'instalacion', JSON_OBJECT(
+        'id', h.instalacion_id, 'nombre', i.nombre)
+    ) 
+    from instalacion i, horario h 
+    where i.id=h.instalacion_id;
+```
+
+Para poder insertarlo en Mongo, tendremos que añadir una coma al final de cada línea de la salida de ese comando y meterlo dentro de un array para hacer un `insertMany`:
+
+```js
+db.instalaciones.insertMany([
+...
+]);
+```
+
+## Datos de la tabla usuarios
+
+Sea la tabla que almacena los usuarios con esta estructura:
+
+```sql
+CREATE TABLE usuario (
+  enabled bit(1) NOT NULL,
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  username varchar(20) NOT NULL UNIQUE,
+  email varchar(80) NOT NULL UNIQUE,
+  password varchar(80) NOT NULL,
+  tipo enum('ADMIN','OPERARIO','USUARIO') DEFAULT NULL
+);
+```
+
+Para poder insertarlo en Mongo, tendremos que añadir una coma al final de cada línea de la salida de ese comando y meterlo dentro de un array para hacer un `insertMany`:
+
+```js
+db.instalaciones.insertMany([
+...
+]);
+```
+
+La consulta para extraer la información de esta tabla en JSON sería: 
+
+```js
+select JSON_OBJECT(
+    'id', id,
+    'username', username,
+    'password', password,
+    'email', email, 
+    'enabled' ,(CASE WHEN enabled=1 THEN true ELSE false END) ,
+    'tipo', tipo)
+    from usuario;
+```
+
+Hemos tenido que usar el `CASE` porque el tipo "bit" no existe en Mongo (en un documento JSON), pero sí el Booleano, y así lo convertimos para evitar problemas.
+
+Para poder insertarlo en Mongo, tendremos que añadir una coma al final de cada línea de la salida de ese comando y meterlo dentro de un array para hacer un `insertMany`:
+
+```js
+db.instalaciones.insertMany([
+...
+]);
+```
+
+## Datos de la tabla reservas
+
+Sea la tabla que almacena las reservas con esta estructura:
+
+```sql
+CREATE TABLE reserva (
+  fecha date DEFAULT NULL,
+  horario_id bigint DEFAULT NULL,
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  usuario_id bigint DEFAULT NULL,  
+  FOREIGN KEY (horario_id) REFERENCES horario (id),
+  FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+);
+```
+
+La consulta para extraer la información de esta tabla en JSON sería: 
+
+```js
+SELECT JSON_OBJECT(
+    'horario', JSON_OBJECT(
+        'hora_fin', h.hora_fin,
+        'hora_inicio',h.hora_inicio, 
+        'id',h.id,
+        'instalacion', JSON_OBJECT(
+            'id', h.instalacion_id, 'nombre', i.nombre) ),  
+    'fecha', fecha,
+    'usuario', JSON_OBJECT(
+        'id', usuario_id,
+        'username', username,
+        'email', email, 
+        'enabled' ,(CASE WHEN enabled=1 THEN true ELSE false END) ,
+        'tipo', tipo))
+FROM reserva r
+INNER JOIN horario h ON h.id = r.horario_id
+INNER JOIN instalacion i ON i.id = h.instalacion_id
+INNER JOIN usuario u ON u.id = r.usuario_id;
+```
+
+Para poder insertarlo en Mongo, tendremos que añadir una coma al final de cada línea de la salida de ese comando y meterlo dentro de un array para hacer un `insertMany`:
+
+```js
+db.instalaciones.insertMany([
+...
+]);
+```
+
+## Arreglando los ID
+
+En Mongo, los documentos se identifican de manera única con su ID que es un atributo del propio sistema cuya clave es `_id`. 
+
+Ya no vamos a necesitar más los **id** heredados del **AUTOINCREMENT** de MySQL, por lo que usaremos **_id** a partir de ahora en la lógica de nuestra aplicación. 
+
+Por esta razón necesitamos hacer algunas modificaciones a la base de datos para corregir el **id** antiguo por el moderno.
+
+Ejemplo de cómo modificar las instalaciones de los horarios para que  contengan el "_id" que es el verdadero ID que hay que usar:
+
+```js
+/**
+ * Esta función, actualiza las instalaciones de los horarios para que
+ * contengan el "_id" que es el verdadero ID que hay que usar.
+ * TO-DO: Optimizar con $lookup
+ */
+db.horarios.find().forEach(
+    function(horario){
+       horario.instalacion=db.instalaciones.findOne(
+            {"id":horario.instalacion.id});
+       db.horarios.updateOne(
+            { id: horario.id }, 
+            { $set: { instalacion: horario.instalacion } });
+    });
+```
+
+> TO-DO: Optimizar con $lookup
+
+Ejemplo de cómo actualizar las reservas con los horarios correctos (el ID de horario está ahora correcto) y los usuarios:
+
+```js
+/**
+ * Esta función actualiza las reservas con los horarios correctos (el
+ * ID de horario está ahora correcto) y los usuarios.
+ * TO-DO: Optimizar con $lookup
+ */
+
+db.reservas.find().forEach(
+    (reserva) => {
+        // si ya hicimos la actualización anterior sólo horario
+        // si no, también habría que hacer instalación.
+        reserva.horario = db.horarios.findOne(
+            {"id": reserva.horario.id});
+        reserva.usuario = db.usuarios.findOne(
+                {"id": reserva.usuario.id});
+        db.reservas.updateOne(
+                { _id: reserva._id }, 
+                { $set: { 
+                    usuario: reserva.usuario, 
+                    horario: reserva.horario } });
+    });
+```
+
+Ejemplo de cómo elimnar los atributos **id** innecesarios ya, de MySQL en la colección instalaciones:
+
+```js
+/**
+ * Como no necesitamos más los "ID" heredados de MySQL, los quitamos
+ */
+db.instalaciones.updateMany({}, {$unset: {id:1}});
+```
+
+Ejemplo de cómo elimnar los atributos **id** innecesarios ya, de MySQL en la colección reservas y sus objetos embebidos:
+
+```js
+/**
+ * Hacemos lo mismo pero para las reservas y sus objetos embebidos.
+ * Esto sería mejor haberlo hecho antes pero entonces no hacemos
+ * este nuevo ejercicio de buscar y actualizar.
+ */
+db.reservas.updateMany(
+    {}, 
+    { $unset: { 
+        'id': 1,
+        'horario.id': 1, 
+        'horario.instalacion.id':1,
+        'usuario.id':1} });
+```
+
+Ejemplo de cómo elimnar los atributos **id** innecesarios ya, de MySQL en la colección usuarios:
+
+```js
+/**
+ * Consulta para eliminar el atributo ID del usuario
+ */
+db.usuarios.updateMany({}, {$unset: {id:1}});
+```
+

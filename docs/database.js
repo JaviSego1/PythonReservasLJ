@@ -142,3 +142,60 @@ db.reservas.insertMany([{"fecha": "2019-10-12", "horario": {"id": 130, "hora_fin
 {"fecha": "2025-02-12", "horario": {"id": 131, "hora_fin": "11:00:00.000000", "hora_inicio": "09:30:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "username": "admin"}},
 {"fecha": "2025-02-13", "horario": {"id": 132, "hora_fin": "12:30:00.000000", "hora_inicio": "11:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "username": "admin"}}]);
 
+
+/**
+ * Esta función, actualiza las instalaciones de los horarios para que
+ * contengan el "_id" que es el verdadero ID que hay que usar.
+ * TO-DO: Optimizar con $lookup
+ */
+db.horarios.find().forEach(
+    function(horario){
+       horario.instalacion=db.instalaciones.findOne(
+            {"id":horario.instalacion.id});
+       db.horarios.updateOne(
+            { id: horario.id }, 
+            { $set: { instalacion: horario.instalacion } });
+    });
+        
+/**
+ * Esta función actualiza las reservas con los horarios correctos (el
+ * ID de horario está ahora correcto) y los usuarios.
+ * TO-DO: Optimizar con $lookup
+ */
+
+db.reservas.find().forEach(
+    (reserva) => {
+        // si ya hicimos la actualización anterior sólo horario
+        // si no, también habría que hacer instalación.
+        reserva.horario = db.horarios.findOne(
+            {"id": reserva.horario.id});
+        reserva.usuario = db.usuarios.findOne(
+                {"id": reserva.usuario.id});
+        db.reservas.updateOne(
+                { _id: reserva._id }, 
+                { $set: { 
+                    usuario: reserva.usuario, 
+                    horario: reserva.horario } });
+    });
+
+/**
+ * Como no necesitamos más los "ID" heredados de MySQL, los quitamos
+ */
+db.instalaciones.updateMany({}, {$unset: {id:1}});
+
+/**
+ * Hacemos lo mismo pero para las reservas y sus objetos embebidos.
+ * Esto sería mejor haberlo hecho antes pero entonces no hacemos
+ * este nuevo ejercicio de buscar y actualizar.
+ */
+db.reservas.updateMany(
+    {}, 
+    { $unset: { 
+        'horario.id': 1, 
+        'horario.instalacion.id':1,
+        'usuario.id':1} });
+
+/**
+ * Consulta para eliminar el atributo ID del usuario
+ */
+db.usuarios.updateMany({}, {$unset: {id:1}});
