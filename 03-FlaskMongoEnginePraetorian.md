@@ -70,10 +70,10 @@ Para guardar las dependencias hacemos:
 pip freeze > requirements.txt
 ```
 
-Para instalar y recuperar el entorno virtual (en Linux/Mac):
+Recordamos una vez más que antes de hacer cualquier intalación de librerías, para instalar y recuperar el entorno virtual (en Linux/Mac):
 
 ```sh
-python -m venv  .
+python -m venv  venv
 . ./venv/bin/activate
 pip -r requirements.txt
 ```
@@ -189,17 +189,17 @@ Para probar los endpoints:
 **Registro de usuario**
 
 ```sh
-curl -X POST http://127.0.0.1:5000/register -H "Content-Type: application/json" -d '{"username": "admin", "password": "1234"}'
+curl -X POST http://127.0.0.1:8080/register -H "Content-Type: application/json" -d '{"username": "admin", "password": "1234"}'
 ```
 
 **Login y obtención del token**
 
 ```sh
-curl -X POST http://127.0.0.1:5000/login -H "Content-Type: application/json" -d '{"username": "admin", "password": "1234"}'
+curl -X POST http://127.0.0.1:8080/login -H "Content-Type: application/json" -d '{"username": "admin", "password": "1234"}'
 ```
 
 **Acceso a una ruta protegida (reemplaza `<TOKEN>` por el token obtenido)**
 
 ```sh
-curl -X GET http://127.0.0.1:5000/protected -H "Authorization: Bearer <TOKEN>"
+curl -X GET http://127.0.0.1:8080/protected -H "Authorization: Bearer <TOKEN>"
 ```

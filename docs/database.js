@@ -1,10 +1,10 @@
 
 
 db.usuarios.insertMany([
-{"id": 2, "tipo": "OPERARIO", "email": "pepe@gmail.com", "enabled": 1, "password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"},
-{"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"},
-{"id": 7, "tipo": "USUARIO", "email": "darkside@starwars.com", "enabled": 1, "password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"},
-{"id": 13, "tipo": "ADMIN", "email": "gerencia@vdc.com", "enabled": 1, "password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
+{"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"},
+{"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"},
+{"id": 7, "roles": "USUARIO", "email": "darkside@starwars.com", "is_active": true, "password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"},
+{"id": 13, "roles": "ADMIN", "email": "gerencia@vdc.com", "is_active": true, "password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
 ]);
 
 db.instalaciones.insertMany([
@@ -134,13 +134,13 @@ db.horarios.insertMany([
 {"id": 140, "hora_fin": "00:30:00.000000", "hora_inicio": "23:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}])
 
 
-db.reservas.insertMany([{"fecha": "2019-10-12", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 2, "tipo": "OPERARIO", "email": "pepe@gmail.com", "enabled": 1, "username": "pepe"}},
-{"fecha": "2019-10-13", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 2, "tipo": "OPERARIO", "email": "pepe@gmail.com", "enabled": 1, "username": "pepe"}},
-{"fecha": "2019-11-11", "horario": {"id": 120, "hora_fin": "18:00:00.000000", "hora_inicio": "17:30:00.000000", "instalacion": {"id": 13, "nombre": "sauna mujeres"}}, "usuario": {"id": 7, "tipo": "USUARIO", "email": "darkside@starwars.com", "enabled": 1, "username": "obijuan"}},
-{"fecha": "2019-11-21", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 7, "tipo": "USUARIO", "email": "darkside@starwars.com", "enabled": 1, "username": "obijuan"}},
-{"fecha": "2025-02-11", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "username": "admin"}},
-{"fecha": "2025-02-12", "horario": {"id": 131, "hora_fin": "11:00:00.000000", "hora_inicio": "09:30:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "username": "admin"}},
-{"fecha": "2025-02-13", "horario": {"id": 132, "hora_fin": "12:30:00.000000", "hora_inicio": "11:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "tipo": "ADMIN", "email": "admin@correo.com", "enabled": 1, "username": "admin"}}]);
+db.reservas.insertMany([{"fecha": "2019-10-12", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "username": "pepe"}},
+{"fecha": "2019-10-13", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "username": "pepe"}},
+{"fecha": "2019-11-11", "horario": {"id": 120, "hora_fin": "18:00:00.000000", "hora_inicio": "17:30:00.000000", "instalacion": {"id": 13, "nombre": "sauna mujeres"}}, "usuario": {"id": 7, "roles": "USUARIO", "email": "darkside@starwars.com", "is_active": true, "username": "obijuan"}},
+{"fecha": "2019-11-21", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 7, "roles": "USUARIO", "email": "darkside@starwars.com", "is_active": true, "username": "obijuan"}},
+{"fecha": "2025-02-11", "horario": {"id": 130, "hora_fin": "09:30:00.000000", "hora_inicio": "08:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "username": "admin"}},
+{"fecha": "2025-02-12", "horario": {"id": 131, "hora_fin": "11:00:00.000000", "hora_inicio": "09:30:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "username": "admin"}},
+{"fecha": "2025-02-13", "horario": {"id": 132, "hora_fin": "12:30:00.000000", "hora_inicio": "11:00:00.000000", "instalacion": {"id": 14, "nombre": "pista de pádel"}}, "usuario": {"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "username": "admin"}}]);
 
 
 /**
@@ -199,3 +199,13 @@ db.reservas.updateMany(
  * Consulta para eliminar el atributo ID del usuario
  */
 db.usuarios.updateMany({}, {$unset: {id:1}});
+
+
+/**
+ * Consulta para eliminar el atributo ID de las instalaciones de los horarios
+ */
+db.horarios.updateMany(
+    {}, 
+    { $unset: {         
+        'instalacion.id':1
+    }});
