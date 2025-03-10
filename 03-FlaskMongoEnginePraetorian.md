@@ -83,29 +83,64 @@ pip -r requirements.txt
 Creamos o modificamos el archivo `app.py` con la configuración de MongoDB y Flask.
 
 ```python
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, json
 from flask_cors import CORS
-from flask_praetorian import Praetorian
-from flask_bcrypt import Bcrypt
-from mongoengine import connect, Document, StringField, BooleanField
+from flask_praetorian import Praetorian, current_user
+from mongoengine import connect, Document, StringField, BooleanField 
+import mongoengine as mongo
+import flask_praetorian
+
+from modelos.Usuarios import Usuarios
+
+from controladores.instalacion import Instalacion
 
 app = Flask(__name__)
-CORS(app)
-bcrypt = Bcrypt(app)
+
+# Configuración de Flask-Praetorian
+app.config["SECRET_KEY"] = "d41d8cd98f00b204e9800998ecf8427e"
+# Este es el tiempo durante el cual el token de acceso es válido
+app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 24}
+# Este es el tiempo durante el cual el token de actualización es válido
+app.config["JWT_REFRESH_LIFESPAN"] = {"days": 7}
+
 
 # Configuración de MongoDB
 app.config["MONGODB_SETTINGS"] = {
-    "db": "gestion",
-    "host": "mongodb://root:78agsbjha7834aSDFjhd73@mongo:27017"
+    "host": "localhost",
+    "db": "deporte",
+    "username": "root",
+    "password": "78agsbjha7834aSDFjhd73",
+    "port": 27017
 }
-connect(**app.config["MONGODB_SETTINGS"])
 
-# Configuración de Flask-Praetorian
-app.config["SECRET_KEY"] = "supersecretkey"
-app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 24}
+
+mongo.connect(**app.config["MONGODB_SETTINGS"])
+try:
+    database = mongo.get_db()
+    print(f"Conectado a MongoDB: {database.name}")
+    # Creamos el usuario por defecto al menos para poder hacer login la primera vez   
+    usuarios = Usuarios.objects(username='operador')
+    if usuarios.count() < 1:
+        Usuarios(
+            username='operador',
+            email='operador@g.educaand.es',                
+            password='Secreto123',
+            roles='ADMIN',
+            is_active = True).save()    
+except Exception as e:
+    print(f"Error de conexión a MongoDB: {e}")
+
+
+# Activamos el CORS para que desde el front React 
+# podamos hacer peticiones al back con flask
+
+cors = CORS()
+cors.init_app(app)
 
 # Inicializar Praetorian
 guard = Praetorian()
+# Le decimos a Praetorian qué modelo gestiona los usuarios
+guard.init_app(app, Usuarios)
 
 ```
 
@@ -114,11 +149,28 @@ guard = Praetorian()
 MongoEngine no usa SQLAlchemy, así que definimos un **modelo de usuario** con las funciones necesarias para Flask-Praetorian.
 
 ```python
-class User(Document):
+
+from mongoengine import Document, StringField, BooleanField, ObjectIdField
+import bson
+
+class Usuarios(Document):
+    _id = ObjectIdField()
     username = StringField(required=True, unique=True)
-    password = StringField(required=True)
-    roles = StringField(default="user")  # Praetorian usa esto para roles
+    hashed_password = StringField()
+    email = StringField(required=True, unique=True)
+    # Praetorian usa esto para roles
+    roles = StringField(default="user")  
     is_active = BooleanField(default=True)
+
+    @property
+    def identity(self):
+        """
+        *Required Attribute or Property*
+
+        flask-praetorian requires that the user class has an ``identity`` instance
+        attribute or property that provides the unique id of the user instance
+        """
+        return str(self._id)
 
     @classmethod
     def lookup(cls, username):
@@ -130,6 +182,60 @@ class User(Document):
 
     def is_valid(self):
         return self.is_active
+    
+    @property
+    def rolenames(self):
+        """
+        *Required Attribute or Property*
+
+        flask-praetorian requires that the user class has a ``rolenames`` instance
+        attribute or property that provides a list of strings that describe the roles
+        attached to the user instance
+        """
+        try:
+            return self.roles.split(",")
+        except Exception:
+            return []
+        
+    @classmethod
+    def get_by_id(cls, in_id):
+        if type(in_id) is str:
+            in_id = bson.ObjectId(in_id)
+        return cls.objects.get(_id=in_id)
+    
+    @classmethod
+    def identify(cls, id):
+        """
+        *Required Method*
+
+        flask-praetorian requires that the user class implements an ``identify()``
+        class method that takes a single ``id`` argument and returns user instance if
+        there is one that matches or ``None`` if there is not.
+        """
+        if cls.id_exists(id):
+            return cls.get_by_id(id)
+        return None
+    
+    @classmethod
+    def id_exists(cls, in_id):
+        if type(in_id) is str:
+            in_id = bson.ObjectId(in_id)
+        return cls.objects(_id=in_id)
+    
+    def is_valid(self):
+        return self.is_active
+    
+    @property
+    def password(self):
+        """
+        *Required Attribute or Property*
+
+        flask-praetorian requires that the user class has a ``password`` instance
+        attribute or property that provides the hashed password assigned to the user
+        instance
+        """
+        return self.hashed_password
+        
 ```
 
 **Nota**: `lookup()` y `identify()` son métodos que necesita Flask-Praetorian para buscar usuarios.
@@ -147,41 +253,47 @@ guard.init_app(app, User)
 Ahora, agregamos **registro de usuarios, login y ruta protegida**.
 
 ```python
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
+    try: 
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+        hashed_password = guard.hash_password(password)
+        email = data.get("email")
+        roles = "OPERARIO"
 
-    if User.objects(username=username).first():
-        return jsonify({"error": "Usuario ya existe"}), 400
+        if Usuarios.objects(username=username).first():
+            return jsonify({"error": "Usuario ya existe"}), 400
+        
+        user = Usuarios(username=username, hashed_password=hashed_password, email=email).save()
 
-    hashed_password = guard.hash_password(password)
-    user = User(username=username, password=hashed_password).save()
+        return jsonify({"message": "Usuario registrado"}), 201
+    except:
+        return jsonify({"error": "Petición incorrecta"}), 401
 
-    return jsonify({"message": "Usuario registrado"}), 201
 
-
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
 
-    user = User.objects(username=username).first()
+        user = Usuarios.objects(username=username).first()
 
-    if user and guard.authenticate(username, password):
-        token = guard.encode_jwt_token(user)
-        return jsonify({"access_token": token}), 200
-    else:
-        return jsonify({"error": "Credenciales incorrectas"}), 401
+        if user and guard.authenticate(username, password):
+            token = guard.encode_jwt_token(user)
+            return jsonify({"access_token": token}), 200
+        else:
+            return jsonify({"error": "Credenciales incorrectas"}), 401
+    except:
+        return jsonify({"error": "Petición incorrecta"}), 401
 
-
-@app.route("/protected", methods=["GET"])
-@guard.auth_required
-def protected():
-    user = guard.current_user()
-    return jsonify({"message": f"Bienvenido, {user.username}."}), 200
+@app.route("/api/usuario", methods=["GET"])
+def usuario():
+    usuario = current_user()
+    return jsonify(usuario);
 ```
 
 Para probar los endpoints:

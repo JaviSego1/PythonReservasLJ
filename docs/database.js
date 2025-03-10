@@ -1,10 +1,10 @@
 
 
 db.usuarios.insertMany([
-{"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"},
-{"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"},
-{"id": 7, "roles": "USUARIO", "email": "darkside@starwars.com", "is_active": true, "password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"},
-{"id": 13, "roles": "ADMIN", "email": "gerencia@vdc.com", "is_active": true, "password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
+{"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "hashed_password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"},
+{"id": 5, "roles": "ADMIN", "email": "admin@correo.com", "is_active": true, "hashed_password": "$2a$10$krlxeZI8Xm.n1fNz7v81Y.yzsHtoMoCnDCsStEAPeGkE9BUOBkwn2", "username": "admin"},
+{"id": 7, "roles": "USUARIO", "email": "darkside@starwars.com", "is_active": true, "hashed_password": "$2a$10$.EJQbCFZtHW1pavBGmMkw.VxOn2or6AL2oPP.8RVvCSqXQA/zwUom", "username": "obijuan"},
+{"id": 13, "roles": "ADMIN", "email": "gerencia@vdc.com", "is_active": true, "hashed_password": "$2a$10$hWkDEd0V0QgmiffgPcSkoe1.OMq5ew.wl7OFBMqii5XkfxtIwzZ92", "username": "gerente"}
 ]);
 
 db.instalaciones.insertMany([

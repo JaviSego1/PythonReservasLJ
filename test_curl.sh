@@ -2,8 +2,11 @@
 
 # Configuración
 BASE_URL="http://127.0.0.1:8080"
-USERNAME="obijuan"
-PASSWORD="1234567890"
+# USERNAME="obijuan"
+# PASSWORD="1234567890"
+
+USERNAME="admin"
+PASSWORD="Secreto_123"
 
 # Registrar usuario
 echo "Registro usuario..."
@@ -28,16 +31,9 @@ fi
 
 echo "\t Token obtenido: $ACCESS_TOKEN"
 
-# Acceso al endpoint protegido
-echo "Accediendo al endpoint protegido..."
-PROTECTED_RESPONSE=$(curl -s -X GET "$BASE_URL/protected" \
-    -H "Authorization: Bearer $ACCESS_TOKEN")
-
-echo "\t Respuesta del endpoint protegido: $PROTECTED_RESPONSE"
-
 # Acceso al endpoint protegido lista de instalaciones
 echo "Accediendo al endpoint protegido..."
-PROTECTED_RESPONSE=$(curl -s -X GET "$BASE_URL/api/instalacion/" \
+PROTECTED_RESPONSE=$(curl -s -X GET "$BASE_URL/api/instalacion" \
     -H "Authorization: Bearer $ACCESS_TOKEN")
 
 echo "\t Listado de instalaciones: $PROTECTED_RESPONSE"

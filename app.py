@@ -50,6 +50,7 @@ except Exception as e:
 # podamos hacer peticiones al back con flask
 
 cors = CORS()
+cors.init_app(app)
 
 # Inicializar Praetorian
 guard = Praetorian()
@@ -57,43 +58,47 @@ guard = Praetorian()
 guard.init_app(app, Usuarios)
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-    hashed_password = guard.hash_password(password)
-    email = data.get("email")
-    roles = "OPERARIO"
+    try: 
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
+        hashed_password = guard.hash_password(password)
+        email = data.get("email")
+        roles = "OPERARIO"
 
-    if Usuarios.objects(username=username).first():
-        return jsonify({"error": "Usuario ya existe"}), 400
-    
-    user = Usuarios(username=username, hashed_password=hashed_password, email=email).save()
+        if Usuarios.objects(username=username).first():
+            return jsonify({"error": "Usuario ya existe"}), 400
+        
+        user = Usuarios(username=username, hashed_password=hashed_password, email=email).save()
 
-    return jsonify({"message": "Usuario registrado"}), 201
+        return jsonify({"message": "Usuario registrado"}), 201
+    except:
+        return jsonify({"error": "Petición incorrecta"}), 401
 
 
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
 
-    user = Usuarios.objects(username=username).first()
+        user = Usuarios.objects(username=username).first()
 
-    if user and guard.authenticate(username, password):
-        token = guard.encode_jwt_token(user)
-        return jsonify({"access_token": token}), 200
-    else:
-        return jsonify({"error": "Credenciales incorrectas"}), 401
+        if user and guard.authenticate(username, password):
+            token = guard.encode_jwt_token(user)
+            return jsonify({"access_token": token}), 200
+        else:
+            return jsonify({"error": "Credenciales incorrectas"}), 401
+    except:
+        return jsonify({"error": "Petición incorrecta"}), 401
 
-
-@app.route("/protected", methods=["GET"])
-@flask_praetorian.auth_required
-def protected():
-    user = current_user()
-    return jsonify({"message": f"Bienvenido, {user.username}."}), 200
+@app.route("/api/usuario", methods=["GET"])
+def usuario():
+    usuario = current_user()
+    return jsonify(usuario);
 
 
 app.register_blueprint(Instalacion)
@@ -101,4 +106,4 @@ app.register_blueprint(Instalacion)
 
 # Run the APP
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=False)
