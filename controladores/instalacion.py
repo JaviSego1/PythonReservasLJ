@@ -19,16 +19,16 @@ def get_all_instalacions():
         output = Instalaciones.objects().to_json()
         return (output)
     except:
-        return jsonify('{"error": "Imposible procesar la petición"}'), 500
+        return '{"error": "Imposible procesar la petición"}', 500
 
 @InstalacionBP.route('<instalacion_id>', methods=['GET'])
 @flask_praetorian.auth_required
 def get_one_instalacion(instalacion_id):
     try: 
-        output = Instalaciones.objects(_id=instalacion_id)[0].to_json()
+        output = Instalaciones.objects(_id=instalacion_id).first().to_json()
         return (output)
     except:
-        return jsonify('{"error": "Imposible procesar la petición"}'), 404
+        return '{"error": "Imposible procesar la petición"}', 404
 
 
 @InstalacionBP.route('', methods=['POST'])
@@ -38,26 +38,25 @@ def save_instalacions():
         data = request.get_json()
         res = Instalaciones(**data).save()
     except Exception as e:
-        return jsonify('{"error": "Imposible crear el objeto"}'), 400
-    return jsonify(res), 201
+        return '{"error": "Imposible crear el objeto"}', 400
+    return jsonify(data), 201
 
 @InstalacionBP.route('<instalacion_id>', methods=['PUT'])
 @flask_praetorian.auth_required
 def update_instalacions(instalacion_id):
     try: 
         data = request.get_json()
-        res = Instalaciones.objects(_id=instalacion_id).update()
+        res = Instalaciones.objects(_id=instalacion_id).update(**data)
     except Exception as e:
-        return jsonify('{"error": "Imposible actualizar el objeto"}'), 400
-    return jsonify(res), 201
+        return '{"error": "Imposible actualizar el objeto"}', 400
+    return jsonify(data), 201
 
 @InstalacionBP.route('<instalacion_id>', methods=['DELETE'])
 @flask_praetorian.auth_required
 def delete_instalacions(instalacion_id):
-    try: 
-        data = request.get_json()
+    try:         
         res = Instalaciones.objects(_id=instalacion_id).delete()
     except Exception as e:
-        return jsonify('{"error": "Imposible actualizar el objeto"}'), 400
-    return jsonify(res), 201
+        return '{"error": "Imposible actualizar el objeto"}', 400
+    return '{"eliminados": '+str(res)+'}', 201
 
