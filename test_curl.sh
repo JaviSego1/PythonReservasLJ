@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuración
-BASE_URL="http://127.0.0.1:8080"
+BASE_URL="http://127.0.0.1:8080/api"
 # USERNAME="obijuan"
 # PASSWORD="1234567890"
 
@@ -33,7 +33,7 @@ echo "\t Token obtenido: $ACCESS_TOKEN"
 
 # Acceso al endpoint protegido lista de instalaciones
 echo "Accediendo al endpoint protegido..."
-PROTECTED_RESPONSE=$(curl -s -X GET "$BASE_URL/api/instalacion" \
+PROTECTED_RESPONSE=$(curl -s -X GET "$BASE_URL/instalacion" \
     -H "Authorization: Bearer $ACCESS_TOKEN")
 
 echo "\t Listado de instalaciones: $PROTECTED_RESPONSE"

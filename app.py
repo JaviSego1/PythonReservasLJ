@@ -4,10 +4,12 @@ from flask_praetorian import Praetorian, current_user
 from mongoengine import connect, Document, StringField, BooleanField 
 import mongoengine as mongo
 import flask_praetorian
+import bcrypt
 
 from modelos.Usuarios import Usuarios
 
-from controladores.instalacion import Instalacion
+from controladores.instalacion import InstalacionBP
+from controladores.horario import HorarioBP
 
 app = Flask(__name__)
 
@@ -28,7 +30,8 @@ app.config["MONGODB_SETTINGS"] = {
     "port": 27017
 }
 
-
+# a día de hoy 10/03/2025, flask_mongo es incompatible con la versión actual de flask
+# usamos mongoengine "a pelo"
 mongo.connect(**app.config["MONGODB_SETTINGS"])
 try:
     database = mongo.get_db()
@@ -39,7 +42,7 @@ try:
         Usuarios(
             username='operador',
             email='operador@g.educaand.es',                
-            password='Secreto123',
+            hashed_password=bcrypt.hashpw('Secreto_123'),
             roles='ADMIN',
             is_active = True).save()    
 except Exception as e:
@@ -96,14 +99,15 @@ def login():
         return jsonify({"error": "Petición incorrecta"}), 401
 
 @app.route("/api/usuario", methods=["GET"])
+@flask_praetorian.auth_required
 def usuario():
     usuario = current_user()
     return jsonify(usuario);
 
 
-app.register_blueprint(Instalacion)
-
+app.register_blueprint(InstalacionBP)
+app.register_blueprint(HorarioBP)
 
 # Run the APP
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    app.run(host="0.0.0.0", port=8080, debug=True)

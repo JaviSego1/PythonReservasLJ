@@ -1,4 +1,4 @@
-
+use deporte;
 
 db.usuarios.insertMany([
 {"id": 2, "roles": "OPERARIO", "email": "pepe@gmail.com", "is_active": true, "hashed_password": "$2a$10$zlD33q.JAxrRPsUGYGY7tedH/dQUn2MmlxQzjO7Y.oqK6rOjJdueq", "username": "pepe"},

@@ -1,4 +1,5 @@
 from mongoengine import Document, StringField, BooleanField, ObjectIdField
+import bson
 
 class Instalaciones(Document):
     """

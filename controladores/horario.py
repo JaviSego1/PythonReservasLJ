@@ -6,57 +6,57 @@ import flask_praetorian
 import bson
 
 
-from modelos.Instalaciones import Instalaciones
+from modelos.Horarios import Horarios
 
-InstalacionBP = Blueprint('instalaciones', __name__, url_prefix='/api/instalacion')
+HorarioBP = Blueprint('horarios', __name__, url_prefix='/api/horario')
 
-# /api/instalacion
+# /api/horario
 
-@InstalacionBP.route('', methods=['GET'])
+@HorarioBP.route('', methods=['GET'])
 @flask_praetorian.auth_required
-def get_all_instalacions():
+def get_all_horarios():
     try: 
-        output = Instalaciones.objects().to_json()
+        output = Horarios.objects().to_json()
         return (output)
     except:
         return jsonify('{"error": "Imposible procesar la petición"}'), 500
 
-@InstalacionBP.route('<instalacion_id>', methods=['GET'])
+@HorarioBP.route('<horario_id>', methods=['GET'])
 @flask_praetorian.auth_required
-def get_one_instalacion(instalacion_id):
+def get_one_horario(horario_id):
     try: 
-        output = Instalaciones.objects(_id=instalacion_id)[0].to_json()
+        output = Horarios.objects(_id=horario_id)[0].to_json()
         return (output)
     except:
         return jsonify('{"error": "Imposible procesar la petición"}'), 404
 
 
-@InstalacionBP.route('', methods=['POST'])
+@HorarioBP.route('', methods=['POST'])
 @flask_praetorian.auth_required
-def save_instalacions():
+def save_horarios():
     try: 
         data = request.get_json()
-        res = Instalaciones(**data).save()
+        res = Horarios(**data).save()
     except Exception as e:
         return jsonify('{"error": "Imposible crear el objeto"}'), 400
     return jsonify(res), 201
 
-@InstalacionBP.route('<instalacion_id>', methods=['PUT'])
+@HorarioBP.route('<horario_id>', methods=['PUT'])
 @flask_praetorian.auth_required
-def update_instalacions(instalacion_id):
+def update_horarios(horario_id):
     try: 
         data = request.get_json()
-        res = Instalaciones.objects(_id=instalacion_id).update()
+        res = Horarios.objects(_id=horario_id).update()
     except Exception as e:
         return jsonify('{"error": "Imposible actualizar el objeto"}'), 400
     return jsonify(res), 201
 
-@InstalacionBP.route('<instalacion_id>', methods=['DELETE'])
+@HorarioBP.route('<horario_id>', methods=['DELETE'])
 @flask_praetorian.auth_required
-def delete_instalacions(instalacion_id):
+def delete_horarios(horario_id):
     try: 
         data = request.get_json()
-        res = Instalaciones.objects(_id=instalacion_id).delete()
+        res = Horarios.objects(_id=horario_id).delete()
     except Exception as e:
         return jsonify('{"error": "Imposible actualizar el objeto"}'), 400
     return jsonify(res), 201
